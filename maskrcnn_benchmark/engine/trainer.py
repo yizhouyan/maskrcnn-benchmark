@@ -13,7 +13,7 @@ from maskrcnn_benchmark.utils.comm import get_world_size,synchronize
 from maskrcnn_benchmark.utils.metric_logger import MetricLogger
 from maskrcnn_benchmark.utils.miscellaneous import mkdir
 from maskrcnn_benchmark.utils.comm import is_main_process
-
+from torch.nn.utils import clip_grad_norm_
 from tensorboardX import SummaryWriter
 
 best_val_map = 0.0
@@ -91,6 +91,7 @@ def do_train(
 
         optimizer.zero_grad()
         losses.backward()
+#	total_norm = clip_grad_norm_(model.parameters(), cfg.SOLVER.GRAD_CLIP)
         optimizer.step()
 
         batch_time = time.time() - end
@@ -99,6 +100,8 @@ def do_train(
 
         eta_seconds = meters.time.global_avg * (max_iter - iteration)
         eta_string = str(datetime.timedelta(seconds=int(eta_seconds)))
+#	if is_main_process():
+ #           writer.add_scalar('total_norm',total_norm, iteration)
 
         if iteration % 20 == 0 or iteration == max_iter:
             logger.info(
